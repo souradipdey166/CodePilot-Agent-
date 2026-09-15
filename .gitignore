@@ -1,0 +1,6 @@
+﻿.env
+venv/
+__pycache__/
+*.pyc
+scratch_general_test/
+quixbugs_data/quixbugs.pdf
