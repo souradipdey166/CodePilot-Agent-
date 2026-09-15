@@ -331,15 +331,33 @@ def patch_application(state: DebugState) -> DebugState:
     return state
 
 import subprocess
-import os
+import shutil
+
+
+def _docker_available() -> bool:
+    """Check whether the Docker CLI and daemon are usable."""
+    if shutil.which("docker") is None:
+        return False
+
+    try:
+        result = subprocess.run(
+            ["docker", "info"],
+            capture_output=True,
+            timeout=10
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
 
 DOCKER_IMAGE = "code-agent-sandbox"
 
+
 def test_execution(state: DebugState) -> DebugState:
-    """Run the configured test command, inside Docker locally, or directly when deployed on HuggingFace Spaces."""
+    """Run the configured test command using Docker when available, otherwise directly."""
     repo_path = Path(state["repo_path"]).resolve()
     test_command = state.get("test_command", "").strip()
-    use_docker = os.getenv("SPACE_ID") is None  # False when running on HF Spaces
+    use_docker = _docker_available()
 
     if not test_command:
         quixbugs_root = repo_path.parent
@@ -361,9 +379,16 @@ def test_execution(state: DebugState) -> DebugState:
         else:
             cmd = ["bash", "-c", f"cd {mount_root} && {test_command}"]
 
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+
         passed = result.returncode == 0
         output = result.stdout + result.stderr
+
     except subprocess.TimeoutExpired:
         passed = False
         output = "Timed out"
@@ -373,7 +398,10 @@ def test_execution(state: DebugState) -> DebugState:
 
     state["test_output"] = output
     state["tests_passed"] = passed
-    state["history"] = state.get("history", []) + [{"step": "test_execution", "passed": passed}]
+    state["history"] = state.get("history", []) + [
+        {"step": "test_execution", "passed": passed}
+    ]
+
     return state
 '''
 DOCKER_IMAGE = "code-agent-sandbox"
