@@ -362,7 +362,7 @@ def test_execution(state: DebugState) -> DebugState:
     if not test_command:
         quixbugs_root = repo_path.parent
         bug_name = Path(state["target_file"]).stem
-        test_command = f"python -m pytest python_testcases/test_{bug_name}.py -v --rootdir=/workspace"
+        test_command = f"python -m pytest python_testcases/test_{bug_name}.py -v "
         mount_root = quixbugs_root
     else:
         mount_root = repo_path
