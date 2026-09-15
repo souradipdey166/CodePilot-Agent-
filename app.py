@@ -55,6 +55,8 @@ def run_agent(github_url, repo_path, bug_report, error_output, test_command):
     config={"recursion_limit": 50}
 )
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         return f"❌ Crashed: {e}", "", "", ""
 
     status = "✅ SUCCESS" if result["tests_passed"] else "❌ FAILED after all attempts"
@@ -69,12 +71,13 @@ def run_agent(github_url, repo_path, bug_report, error_output, test_command):
 with gr.Blocks(title="Autonomous Python Repair Agent") as demo:
     gr.Markdown("# 🤖 Autonomous Python Repair Agent")
     gr.Markdown(
-        "A LangGraph-based agent that explores a codebase, diagnoses a bug, "
-        "generates a patch, validates it, applies it, and verifies the fix "
-        "with real (Docker-sandboxed) test execution — retrying with failure "
-        "feedback if needed. Benchmarked on QuixBugs (40 real algorithmic bugs). "
+       "A LangGraph-based agent that explores a codebase, diagnoses a bug, "
+       "generates a patch, validates it, applies it, and verifies the fix "
+       "with automated test execution — retrying with failure feedback if needed. "
+        "Benchmarked on QuixBugs (40 real algorithmic bugs). "
         "You can also point it at any public GitHub repo below."
     )
+   
 
     with gr.Row():
         with gr.Column():
@@ -124,9 +127,7 @@ with gr.Blocks(title="Autonomous Python Repair Agent") as demo:
     )
 
 if __name__ == "__main__":
-    import os
-
-demo.launch(
-    server_name="0.0.0.0",
-    server_port=int(os.environ.get("PORT", 7860))
-)
+    demo.launch(
+        server_name="0.0.0.0",
+        server_port=int(os.environ.get("PORT", 7860))
+    )
