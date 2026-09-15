@@ -50,7 +50,10 @@ def run_agent(github_url, repo_path, bug_report, error_output, test_command):
     }
 
     try:
-        result = app_graph.invoke(state)
+        result = app_graph.invoke(
+    state,
+    config={"recursion_limit": 50}
+)
     except Exception as e:
         return f"❌ Crashed: {e}", "", "", ""
 
